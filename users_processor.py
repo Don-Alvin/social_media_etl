@@ -2,16 +2,16 @@ from data_ingestion import read_json_file
 import pandas as pd
 import logging
 
-class PostsProcessor:
+class UsersProcessor:
     def __init__(self, config_params, logging_level='INFO'):
         """
-        Initializes the PostsProcessor with the path to the JSON file.
+        Initializes the UsersProcessor with the path to the JSON file and configuration parameters.
         
-        :param file_path: Path to the JSON file containing posts data
+        :param config_params: Dictionary containing configuration parameters
         """
-        self.file_path = config_params['posts_file_path']
-        self.columns = config_params['posts_columns']
-        self.columns_to_rename = config_params['posts_columns_to_rename']
+        self.file_path = config_params['users_file_path']
+        self.columns = config_params['users_columns']
+        self.columns_to_rename = config_params['users_columns_to_rename']
 
         self.initialize_logging(logging_level)
 
@@ -22,8 +22,8 @@ class PostsProcessor:
         Initializes the logging configuration.
         
         :param logging_level: Logging level to set (e.g., 'INFO', 'DEBUG', 'ERROR')
-            """
-        logger_name = __name__ + ".PostsProcessor"
+        """
+        logger_name = __name__ + ".UsersProcessor"
         self.logger = logging.getLogger(logger_name)
         self.logger.propagate = False
 
@@ -44,62 +44,59 @@ class PostsProcessor:
             formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
-
-    # Load the posts data from the JSON file into a pandas DataFrame  
+    
     def load_data(self):
         """
-        Loads the posts data from the JSON file into a pandas DataFrame.
-            """
-        self.logger.info(f"Loading posts data from {self.file_path}")
+        Loads the users data from the JSON file into a pandas DataFrame.
+        """
+        self.logger.info(f"Loading users data from {self.file_path}")
         self.df = read_json_file(self.file_path)
-
-        if self.df is not None:
-            self.logger.info(f"Posts data loaded successfully with {len(self.df)} records.")
-        else:
-            self.logger.error("Failed to load posts data. DataFrame is None.")
-
-    # Select only the specified columns
+    
+    # Select specific columns from the DataFrame based on the configuration
     def select_columns(self):
         """
-        Selects only the specified columns from the DataFrame.
+        Selects specific columns from the DataFrame based on the configuration parameters.
         """
         if self.df is not None:
             self.logger.info(f"Selecting columns: {self.columns}")
             self.df = self.df[self.columns]
-            self.logger.info(f"Columns selected successfully. DataFrame now has {len(self.df)} records.")
+            self.logger.info(f"Columns selected successfully. DataFrame shape: {self.df.shape}")
         else:
-            self.logger.error("Cannot select columns. DataFrame is None.")
-        
-    # Renames the columns of the DataFrame based on the provided mapping
+            self.logger.error("DataFrame is None. Cannot select columns.")
+
+    # Rename columns in the DataFrame based on the configuration
     def rename_columns(self):
         """
-        Renames the columns of the DataFrame based on the provided mapping.
+        Renames columns in the DataFrame based on the configuration parameters.
         """
         if self.df is not None:
-            self.logger.info("Renaming columns in posts DataFrame.")
+            self.logger.info(f"Renaming columns: {self.columns_to_rename}")
             self.df.rename(columns=self.columns_to_rename, inplace=True)
             self.logger.info("Columns renamed successfully.")
         else:
-            self.logger.error("Cannot rename columns. DataFrame is None.")
-        
-    # Change createdAt columns to datetime format
-    def convert_datetime_columns(self):
+            self.logger.error("DataFrame is None. Cannot rename columns.")
+    
+    # Format dates columns in the DataFrame
+    def format_dates(self):
         """
         Converts 'createdAt column to datetime format.
         """
         if self.df is not None:
-            self.logger.info("Converting 'createdAt column to datetime format.")
-            self.df['dateCreated'] = pd.to_datetime(self.df['dateCreated'], unit='ms', errors='coerce')
-            self.df['dateCreated'] = self.df['dateCreated'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            self.logger.info("Converting 'createdAtcolumn to datetime format.")
+            self.df['createdAt'] = pd.to_datetime(self.df['createdAt'], unit='ms', errors='coerce')
+            self.df['createdAt'] = self.df['createdAt'].dt.strftime('%Y-%m-%d %H:%M:%S')
         else:
             self.logger.error("Cannot convert datetime columns. DataFrame is None.")
-        
-    def process_posts(self):
+
+    # Process the users data by loading, selecting columns, renaming, and formatting dates
+    def process_users(self):
         """
-        Processes the posts data by loading, renaming columns, and converting datetime columns.
+        Processes the users data by loading, selecting columns, renaming, and formatting dates.
         """
         self.load_data()
         self.select_columns()
         self.rename_columns()
-        self.convert_datetime_columns()
-        self.logger.info("Posts processing completed.")
+        self.format_dates()
+        self.logger.info("Users data processing completed.")
+    
+    
