@@ -71,6 +71,22 @@ class CommentsProcessor:
             self.df.rename(columns=self.columns_to_rename, inplace=True)
         else:
             self.logger.error("DataFrame is empty. Cannot rename columns.")
+
+    # Format dates columns in the DataFrame
+    def format_dates(self):
+        """
+        Formats date columns in the DataFrame.
+        This method can be extended to format specific date columns as needed.
+        """
+        if self.df is not None:
+            # Example: Convert 'created_at' column to datetime format
+            if 'created_at' in self.df.columns:
+                self.logger.info("Formatting 'created_at' column to datetime.")
+                self.df['created_at'] = pd.to_datetime(self.df['created_at'], errors='coerce')
+            else:
+                self.logger.warning("'created_at' column not found in DataFrame.")
+        else:
+            self.logger.error("DataFrame is empty. Cannot format dates.")
     
     def process_comments(self):
         """
@@ -79,4 +95,5 @@ class CommentsProcessor:
         self.load_data()
         self.select_columns()
         self.rename_columns()
+        self.format_dates()
         self.logger.info("Comments data processing completed.")
